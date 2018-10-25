@@ -1,0 +1,35 @@
+{
+    "folders":
+    [
+        {
+            "name": "Source",
+            "path": "src"
+        },
+        {
+            "name": "Tests",
+            "path": "test"
+        },
+        {
+            "name": "Meta",
+            "path": ".",
+            "folder_exclude_patterns":
+            [
+                "coverage",
+                "src",
+                "test",
+                "node_modules",
+            ]
+        }
+    ],
+    "settings":
+    {
+          "search_in_project_TheSilverSearcher_common_options": "--ignore coverage --ignore node_modules",
+    },
+    "build_systems":
+    [
+        {
+            "name": "Test",
+            "shell_cmd": "grunt --no-color",
+        }
+    ]
+}
