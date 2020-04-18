@@ -71,7 +71,7 @@ module.exports.makeLingo = async (event) => {
         <form>
             <label for="words">Words</label>
             <input type="text" id="words" name="words" value="${parseInt(event.queryStringParameters && event.queryStringParameters.words) || 100}" />
-            <label for="syllables">Syllables</label>
+            <label for="syllables">Syllables (leave blank for weighted-random)</label>
             <input type="text" id="syllables" name="syllables" value="${parseInt(event.queryStringParameters && event.queryStringParameters.syllables) || ''}" />
             <label for="reload">Reload from sheet</label>
             <input type="checkbox" name="reload" id="reload" value="true" />
