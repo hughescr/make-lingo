@@ -45,8 +45,8 @@ module.exports.makeLingo = async (event) => {
     const { syllables, frequencies, syllableCounts, syllableCountFrequencies } = await dataPromise;
 
     const words = [];
-    for(let i = 0; i < (event.queryStringParameters && event.queryStringParameters.words || 100); i++) {
-        const syllables_for_this_word = event.queryStringParameters && event.queryStringParameters.syllables || weighted.select(syllableCounts, syllableCountFrequencies);
+    for(let i = 0; i < (event.queryStringParameters && parseInt(event.queryStringParameters.words) || 100); i++) {
+        const syllables_for_this_word = event.queryStringParameters && parseInt(event.queryStringParameters.syllables) || weighted.select(syllableCounts, syllableCountFrequencies);
         let word = '';
         for(let s = 0; s < syllables_for_this_word; s++) {
             word = `${word}${weighted.select(syllables, frequencies)}`;
@@ -62,9 +62,14 @@ module.exports.makeLingo = async (event) => {
         },
         body: `<html><head><title>Word generator</title></head>
     <body>
-        <ul>
-            <li>${words.join('</li><li>')}</li>
-        </ul>
+        <form>
+            <label for="words">Words</label>
+            <input type="text" id="words" name="words" value="${parseInt(event.queryStringParameters.words) || 100}" />
+            <label for="syllables">Syllables</label>
+            <input type="text" id="syllables" name="syllables" value="${parseInt(event.queryStringParameters.syllables) || ''}" />
+            <input type="submit" value="Make more"/>
+        </form>
+        ${words.join('<br />')}
     </body>
 </html>`,
     };
