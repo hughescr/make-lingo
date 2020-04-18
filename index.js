@@ -4,33 +4,24 @@ const _ = require('lodash');
 const { 'default': Sheets } = require('node-sheets');
 const weighted = require('weighted');
 
-const nconf = require('nconf');
+const fs = require('fs');
+const promisify = require('util').promisify;
+const stat = promisify(fs.stat);
 
-// Read defaults
-nconf.argv(require('yargs') // eslint-disable-line node/no-extraneous-require
-        .wrap(null)
-        .help('help')
-        .alias('help', 'h')
-        .example('node index.js -n 10', 'Generate 10 random words with varying lengths')
-        .example('node index.js -n 20 -s 3', 'Generate 20 random words each of which has 3 syllables')
-        .options({
-            numWords: {
-                alias: ['n'],
-                describe: 'The number of words to generate',
-                parseValues: true,
-                'default': 1,
-            },
-            forceSyllables: {
-                alias: ['s', 'numSyllables'],
-                describe: 'Force all words to use this syllable count (optional: if not specified, use distribution of syllable counts',
-                parseValues: true,
-            },
-        })
-        .required('numWords'));
+/* istanbul ignore next */
+const git_version = stat('./git_version.json')
+    .then(res => {
+        // If we did manage to stat the file, then load it
+        return Promise.resolve([res, require('./git_version.json')]); // eslint-disable-line node/no-missing-require
+    })
+    .catch(() => {
+        // If we didn't stat the file then hardcode some stuff
+        return Promise.resolve([{ mtime: new Date() }, { gitVersion: '1.0.0' }]);
+    });
 
 async function loadData() {
-    const sheet = new Sheets('1kgbgBHRPOegL_fpQMn37UEsMk0h3OXfSbutV8UJZtYw');
-    await sheet.authorizeApiKey('AIzaSyCp94EJsdc1J-vDwEuW_PGeQekPL8o9k-0');
+    const sheet = new Sheets(process.env.SHEET_ID || '1kgbgBHRPOegL_fpQMn37UEsMk0h3OXfSbutV8UJZtYw');
+    await sheet.authorizeApiKey(process.env.API_KEY || 'AIzaSyCp94EJsdc1J-vDwEuW_PGeQekPL8o9k-0');
     const syllableFrequencyData =  _.chain((await sheet.tables('A:B')).rows)
         .filter(row => row.Frequency && row.Frequency.value &&
                         row.Syllable && row.Syllable.value)
@@ -50,14 +41,44 @@ async function loadData() {
     return { syllables, frequencies, syllableCounts, syllableCountFrequencies };
 }
 
-(async () => {
-    const { syllables, frequencies, syllableCounts, syllableCountFrequencies } = await loadData();
-    for(let i = 0; i < nconf.get('numWords'); i++) {
-        const syllables_for_this_word = nconf.get('numSyllables') || weighted.select(syllableCounts, syllableCountFrequencies);
+let dataPromise = loadData();
+
+module.exports.makeLingo = async (event) => {
+    if(event.queryStringParameters && event.queryStringParameters.reload === 'true') {
+        dataPromise = loadData();
+    }
+
+    const { syllables, frequencies, syllableCounts, syllableCountFrequencies } = await dataPromise;
+
+    const words = [];
+    for(let i = 0; i < (event.queryStringParameters && parseInt(event.queryStringParameters.words) || 100); i++) {
+        const syllables_for_this_word = event.queryStringParameters && parseInt(event.queryStringParameters.syllables) || weighted.select(syllableCounts, syllableCountFrequencies);
         let word = '';
         for(let s = 0; s < syllables_for_this_word; s++) {
             word = `${word}${weighted.select(syllables, frequencies)}`;
         }
-        console.log(word);
+        words.push(word);
     }
-})();
+
+    return {
+        statusCode: 200,
+        headers: {
+            'X-Git-Version': JSON.stringify(await git_version),
+            'Content-Type': 'text/html',
+        },
+        body: `<html><head><title>Word generator</title></head>
+    <body>
+        <form>
+            <label for="words">Words</label>
+            <input type="text" id="words" name="words" value="${parseInt(event.queryStringParameters && event.queryStringParameters.words) || 100}" />
+            <label for="syllables">Syllables (leave blank for weighted-random)</label>
+            <input type="text" id="syllables" name="syllables" value="${parseInt(event.queryStringParameters && event.queryStringParameters.syllables) || ''}" />
+            <label for="reload">Reload from sheet</label>
+            <input type="checkbox" name="reload" id="reload" value="true" />
+            <input type="submit" value="Make more"/>
+        </form>
+        ${words.join('<br />')}
+    </body>
+</html>`,
+    };
+};
