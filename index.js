@@ -19,7 +19,7 @@ const git_version = stat('./git_version.json')
         return Promise.resolve([{ mtime: new Date() }, { gitVersion: '1.0.0' }]);
     });
 
-const dataPromise = (async function loadData() {
+async function loadData() {
     const sheet = new Sheets(process.env.SHEET_ID || '1kgbgBHRPOegL_fpQMn37UEsMk0h3OXfSbutV8UJZtYw');
     await sheet.authorizeApiKey(process.env.API_KEY || 'AIzaSyCp94EJsdc1J-vDwEuW_PGeQekPL8o9k-0');
     const syllableFrequencyData =  _.chain((await sheet.tables('A:B')).rows)
@@ -39,9 +39,15 @@ const dataPromise = (async function loadData() {
     const syllableCountFrequencies = _.map(syllablePerWordData, 'Frequency');
 
     return { syllables, frequencies, syllableCounts, syllableCountFrequencies };
-})();
+}
+
+let dataPromise = loadData();
 
 module.exports.makeLingo = async (event) => {
+    if(event.queryStringParameters && event.queryStringParameters.reload === 'true') {
+        dataPromise = loadData();
+    }
+
     const { syllables, frequencies, syllableCounts, syllableCountFrequencies } = await dataPromise;
 
     const words = [];
@@ -67,6 +73,8 @@ module.exports.makeLingo = async (event) => {
             <input type="text" id="words" name="words" value="${parseInt(event.queryStringParameters && event.queryStringParameters.words) || 100}" />
             <label for="syllables">Syllables</label>
             <input type="text" id="syllables" name="syllables" value="${parseInt(event.queryStringParameters && event.queryStringParameters.syllables) || ''}" />
+            <label for="reload">Reload from sheet</label>
+            <input type="checkbox" name="reload" id="reload" value="true" />
             <input type="submit" value="Make more"/>
         </form>
         ${words.join('<br />')}
