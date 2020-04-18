@@ -49,10 +49,16 @@ package:
 plugins:
   - "@hughescr/serverless-plugin-git-version-json"
   - serverless-plugin-zip-symlinks-compress-harder
+  - serverless-domain-manager
 
 custom:
   # Specify the path to where the git versioning plugin should write its output json file, relative to the root folder
   versionJSONFile: git_version.json
+
+  customDomain:
+    domainName: makelingo.rungie.com
+    endpointType: 'regional'
+
 
 functions:
 
@@ -60,12 +66,3 @@ functions:
     handler: index.makeLingo
     events:
       - httpApi: GET /
-
-resources:
-
-    pathmapping:
-      Type: AWS::ApiGateway::BasePathMapping
-      Properties:
-        DomainName: "makelingo.rungie.com"
-        RestApiId:
-          Ref: ApiGatewayRestApi
