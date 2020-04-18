@@ -64,9 +64,9 @@ module.exports.makeLingo = async (event) => {
     <body>
         <form>
             <label for="words">Words</label>
-            <input type="text" id="words" name="words" value="${parseInt(event.queryStringParameters.words) || 100}" />
+            <input type="text" id="words" name="words" value="${parseInt(event.queryStringParameters && event.queryStringParameters.words) || 100}" />
             <label for="syllables">Syllables</label>
-            <input type="text" id="syllables" name="syllables" value="${parseInt(event.queryStringParameters.syllables) || ''}" />
+            <input type="text" id="syllables" name="syllables" value="${parseInt(event.queryStringParameters && event.queryStringParameters.syllables) || ''}" />
             <input type="submit" value="Make more"/>
         </form>
         ${words.join('<br />')}
