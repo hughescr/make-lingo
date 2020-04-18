@@ -4,6 +4,21 @@ const _ = require('lodash');
 const { 'default': Sheets } = require('node-sheets');
 const weighted = require('weighted');
 
+const fs = require('fs');
+const promisify = require('util').promisify;
+const stat = promisify(fs.stat);
+
+/* istanbul ignore next */
+const git_version = stat('./git_version.json')
+    .then(res => {
+        // If we did manage to stat the file, then load it
+        return Promise.resolve([res, require('./git_version.json')]); // eslint-disable-line node/no-missing-require
+    })
+    .catch(() => {
+        // If we didn't stat the file then hardcode some stuff
+        return Promise.resolve([{ mtime: new Date() }, { gitVersion: '1.0.0' }]);
+    });
+
 const dataPromise = (async function loadData() {
     const sheet = new Sheets(process.env.SHEET_ID || '1kgbgBHRPOegL_fpQMn37UEsMk0h3OXfSbutV8UJZtYw');
     await sheet.authorizeApiKey(process.env.API_KEY || 'AIzaSyCp94EJsdc1J-vDwEuW_PGeQekPL8o9k-0');
@@ -39,5 +54,18 @@ module.exports.makeLingo = async (event) => {
         words.push(word);
     }
 
-    return words;
+    return {
+        statusCode: 200,
+        headers: {
+            'X-Git-Version': JSON.stringify(await git_version),
+            'Content-Type': 'text/html',
+        },
+        body: `<html><head><title>Word generator</title></head>
+    <body>
+        <ul>
+            <li>${words.join('</li><li>')}</li>
+        </ul>
+    </body>
+</html>`,
+    };
 };
