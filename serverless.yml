@@ -1,0 +1,62 @@
+# Welcome to Serverless!
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+
+service: make-lingo
+
+provider:
+  name: aws
+  # These values are defaults, and can be over-written in each function below
+  runtime: nodejs12.x
+  memorySize: 128
+  timeout: 10
+  region: us-west-2
+
+  deploymentBucket:
+    name: ${ssm:/serverless/deploymentbucket/prefix}-${self:provider.region}
+    blockPublicAccess: true
+
+  environment:
+    SHEET_ID: 1kgbgBHRPOegL_fpQMn37UEsMk0h3OXfSbutV8UJZtYw
+    API_KEY: 'AIzaSyCp94EJsdc1J-vDwEuW_PGeQekPL8o9k-0'
+    BASE_KEY_PATH: com.cognoa.EVE
+    MEDIACONVERT_JOB_TEMPLATE: ${self:service}-${self:provider.stage}-job-template
+    MEDIACONVERT_IAM_ROLE: ${self:service}-${self:provider.stage}-mediaconvert-role
+
+package:
+  individually: false
+  artifact: ${self:service}.zip
+  exclude:
+    - coverage/**
+    - reports/**
+    - .nyc_output/**
+    - "*.sublime*"
+    - package.json
+    - stryker.conf.js
+    - deploy.sh
+    - serverless.yml
+    - yarn.lock
+    - yarn-error.log
+    - node_modules/**
+    - serverless_plugins/**
+    - .serverless/**
+    - "*.zip"
+    - "**/test/**"
+    - "**/tests/**"
+    - serverless-test-data/**
+
+plugins:
+  - "@hughescr/serverless-plugin-git-version-json"
+  - serverless-plugin-zip-symlinks-compress-harder
+
+custom:
+  # Specify the path to where the git versioning plugin should write its output json file, relative to the root folder
+  versionJSONFile: git_version.json
+
+functions:
+
+  makeLingo:
+    handler: index.makeLingo
+    events:
+      - httpApi: GET /makeLingo
