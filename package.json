@@ -12,9 +12,9 @@
   "author": "Craig R. Hughes <craig.git@rungie.com>",
   "license": "BSD-3-Clause-Clear",
   "devDependencies": {
-    "@hughescr/eslint-config-default": "^2.4.9",
+    "@hughescr/eslint-config-default": "^2.5.0",
     "@hughescr/serverless-plugin-git-version-json": "^1.0.1",
-    "eslint": "^7.5.0",
+    "eslint": "^7.6.0",
     "serverless": "^1.77.1",
     "serverless-plugin-zip-symlinks-compress-harder": "^0.10.2"
   },
