@@ -12,11 +12,11 @@
   "author": "Craig R. Hughes <craig.git@rungie.com>",
   "license": "BSD-3-Clause-Clear",
   "devDependencies": {
-    "@hughescr/eslint-config-default": "^2.5.0",
-    "@hughescr/serverless-plugin-git-version-json": "^1.0.1",
+    "@hughescr/eslint-config-default": "^2.8.2",
+    "@hughescr/serverless-plugin-git-version-json": "^1.0.2",
     "eslint": "^7.6.0",
-    "serverless": "^1.77.1",
-    "serverless-plugin-zip-symlinks-compress-harder": "^0.10.2"
+    "serverless": "^1.78.1",
+    "serverless-plugin-zip-symlinks-compress-harder": "^0.10.3"
   },
   "dependencies": {
     "lodash": "^4.17.19",

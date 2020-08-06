@@ -12,28 +12,28 @@ const stat = promisify(fs.stat);
 const git_version = stat('./git_version.json')
     .then(res => {
         // If we did manage to stat the file, then load it
-        return Promise.resolve([res, require('./git_version.json')]); // eslint-disable-line node/no-missing-require
+        return [res, require('./git_version.json')]; // eslint-disable-line node/no-missing-require -- If stat finds the file, it'll be there
     })
     .catch(() => {
         // If we didn't stat the file then hardcode some stuff
-        return Promise.resolve([{ mtime: new Date() }, { gitVersion: '1.0.0' }]);
+        return [{ mtime: new Date() }, { gitVersion: '1.0.0' }];
     });
 
 async function loadData() {
     const sheet = new Sheets(process.env.SHEET_ID || '1kgbgBHRPOegL_fpQMn37UEsMk0h3OXfSbutV8UJZtYw');
     await sheet.authorizeApiKey(process.env.API_KEY || 'AIzaSyCp94EJsdc1J-vDwEuW_PGeQekPL8o9k-0');
-    const syllableFrequencyData =  _.chain((await sheet.tables('A:B')).rows)
+    const syllableFrequencyData =  _((await sheet.tables('A:B')).rows)
         .filter(row => row.Frequency && row.Frequency.value &&
                         row.Syllable && row.Syllable.value)
-        .map(row => _.mapValues(row, v => v.value))
+        .map(row => _.mapValues(row, 'value'))
         .value();
     const syllables = _.map(syllableFrequencyData, 'Syllable');
     const frequencies = _.map(syllableFrequencyData, 'Frequency');
 
-    const syllablePerWordData = _.chain((await sheet.tables('D:E')).rows)
+    const syllablePerWordData = _((await sheet.tables('D:E')).rows)
         .filter(row => row.Frequency && row.Frequency.value &&
                         row.SyllablesPerWord && row.SyllablesPerWord.value)
-        .map(row => _.mapValues(row, v => v.value))
+        .map(row => _.mapValues(row, 'value'))
         .value();
     const syllableCounts = _.map(syllablePerWordData, 'SyllablesPerWord');
     const syllableCountFrequencies = _.map(syllablePerWordData, 'Frequency');
