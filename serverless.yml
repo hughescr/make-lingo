@@ -24,6 +24,9 @@ provider:
     MEDIACONVERT_JOB_TEMPLATE: ${self:service}-${self:provider.stage}-job-template
     MEDIACONVERT_IAM_ROLE: ${self:service}-${self:provider.stage}-mediaconvert-role
 
+  httpApi:
+    payload: '2.0'
+
 package:
   individually: false
   artifact: ${self:service}.zip
