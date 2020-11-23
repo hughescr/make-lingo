@@ -68,6 +68,7 @@ module.exports.makeLingo = async (event) => {
         },
         body: `<html><head><title>Word generator</title></head>
     <body>
+    	<h3>Edit <a href="https://docs.google.com/spreadsheets/d/1kgbgBHRPOegL_fpQMn37UEsMk0h3OXfSbutV8UJZtYw/edit#gid=0">spreadsheet</a></h3>
         <form>
             <label for="words">Words</label>
             <input type="text" id="words" name="words" value="${parseInt(event.queryStringParameters && event.queryStringParameters.words) || 100}" />
@@ -77,7 +78,9 @@ module.exports.makeLingo = async (event) => {
             <input type="checkbox" name="reload" id="reload" value="true" />
             <input type="submit" value="Make more"/>
         </form>
-        ${words.join('<br />')}
+        <div class="words">
+	        <div class="word">${words.join('</div><div class="word">')}</div>
+        </div>
     </body>
 </html>`,
     };
