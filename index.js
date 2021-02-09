@@ -22,23 +22,37 @@ const git_version = stat('./git_version.json')
 async function loadData() {
     const sheet = new Sheets(process.env.GOOGLE_SHEET_ID);
     await sheet.authorizeApiKey(process.env.GOOGLE_API_KEY);
-    const syllableFrequencyData =  _((await sheet.tables('A:B')).rows)
-        .filter(row => row.Frequency && row.Frequency.value &&
-                        row.Syllable && row.Syllable.value)
-        .map(row => _.mapValues(row, 'value'))
-        .value();
-    const syllables = _.map(syllableFrequencyData, 'Syllable');
-    const frequencies = _.map(syllableFrequencyData, 'Frequency');
 
-    const syllablePerWordData = _((await sheet.tables('D:E')).rows)
-        .filter(row => row.Frequency && row.Frequency.value &&
-                        row.SyllablesPerWord && row.SyllablesPerWord.value)
-        .map(row => _.mapValues(row, 'value'))
-        .value();
-    const syllableCounts = _.map(syllablePerWordData, 'SyllablesPerWord');
-    const syllableCountFrequencies = _.map(syllablePerWordData, 'Frequency');
+    const sheetNames = await sheet.getSheetsNames();
 
-    return { syllables, frequencies, syllableCounts, syllableCountFrequencies };
+    return sheet.tables(_.map(sheetNames, name => ({ name: name, range: 'A:E' })))
+    .then(fetch => {
+        const parsed = {};
+
+        _.forEach(fetch, syls => {
+            const title = syls.title;
+            parsed[title] = {};
+
+            const syllableFrequencyData = _(syls.rows)
+                .filter(row => row.Frequency && row.Frequency.value &&
+                                row.Syllable && row.Syllable.value)
+                .map(row => _.mapValues(row, 'value'))
+                .value();
+
+            parsed[title].syllables = _.map(syllableFrequencyData, 'Syllable');
+            parsed[title].frequencies = _.map(syllableFrequencyData, 'Frequency');
+
+            const syllablePerWordData = _(syls.rows)
+                .filter(row => row.LengthFrequency && row.LengthFrequency.value &&
+                                row.SyllablesPerWord && row.SyllablesPerWord.value)
+                .map(row => _.mapValues(row, 'value'))
+                .value();
+            parsed[title].syllableCounts = _.map(syllablePerWordData, 'SyllablesPerWord');
+            parsed[title].syllableCountFrequencies = _.map(syllablePerWordData, 'LengthFrequency');
+        });
+
+        return parsed;
+    });
 }
 
 let dataPromise = loadData();
@@ -48,7 +62,14 @@ module.exports.makeLingo = async (event) => {
         dataPromise = loadData();
     }
 
-    const { syllables, frequencies, syllableCounts, syllableCountFrequencies } = await dataPromise;
+    const language = (event.queryStringParameters && event.queryStringParameters.language) ||
+                     (event.cookies && _.find(event.cookies, cookie => cookie.match(/^language=(.+)$/))
+                       && _.find(event.cookies, cookie => cookie.match(/^language=(.+)$/)).match(/^language=(.+)$/)[1]) ||
+                     _.keys(await dataPromise)[0];
+
+    console.log('Language:', language);
+
+    const { syllables, frequencies, syllableCounts, syllableCountFrequencies } = (await dataPromise)[language];
 
     const words = [];
     for(let i = 0; i < (event.queryStringParameters && parseInt(event.queryStringParameters.words) || 100); i++) {
@@ -62,6 +83,7 @@ module.exports.makeLingo = async (event) => {
 
     return {
         statusCode: 200,
+        cookies: [`language=${language}; Max-Age:${60 * 60 * 24 * 365}`],
         headers: {
             'X-Git-Version': JSON.stringify(await git_version),
             'Content-Type': 'text/html',
@@ -70,6 +92,10 @@ module.exports.makeLingo = async (event) => {
     <body>
     	<h3>Edit <a href="https://docs.google.com/spreadsheets/d/${process.env.GOOGLE_SHEET_ID}/edit#gid=0">spreadsheet</a></h3>
         <form>
+            <label for="language">Language</label>
+            <select name="language" id="language">
+                ${(await _(await dataPromise).keys().map(key => `<option value="${key}"${key == language ? ' selected' : ''}>${key}</option>`).join('\n                '))}
+            </select>
             <label for="words">Words</label>
             <input type="text" id="words" name="words" value="${parseInt(event.queryStringParameters && event.queryStringParameters.words) || 100}" />
             <label for="syllables">Syllables (leave blank for weighted-random)</label>
