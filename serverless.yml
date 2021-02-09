@@ -65,10 +65,3 @@ functions:
     handler: index.makeLingo
     events:
       - httpApi: GET /
-
-    pathmapping:
-      Type: AWS::ApiGateway::BasePathMapping
-      Properties:
-        DomainName: "makelingo.rungie.com"
-        RestApiId:
-          Ref: ApiGatewayRestApi
