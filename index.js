@@ -20,8 +20,8 @@ const git_version = stat('./git_version.json')
     });
 
 async function loadData() {
-    const sheet = new Sheets(process.env.SHEET_ID || '1kgbgBHRPOegL_fpQMn37UEsMk0h3OXfSbutV8UJZtYw');
-    await sheet.authorizeApiKey(process.env.API_KEY || 'AIzaSyCp94EJsdc1J-vDwEuW_PGeQekPL8o9k-0');
+    const sheet = new Sheets(process.env.GOOGLE_SHEET_ID);
+    await sheet.authorizeApiKey(process.env.GOOGLE_API_KEY);
     const syllableFrequencyData =  _((await sheet.tables('A:B')).rows)
         .filter(row => row.Frequency && row.Frequency.value &&
                         row.Syllable && row.Syllable.value)
@@ -68,7 +68,7 @@ module.exports.makeLingo = async (event) => {
         },
         body: `<html><head><title>Word generator</title></head>
     <body>
-    	<h3>Edit <a href="https://docs.google.com/spreadsheets/d/1kgbgBHRPOegL_fpQMn37UEsMk0h3OXfSbutV8UJZtYw/edit#gid=0">spreadsheet</a></h3>
+    	<h3>Edit <a href="https://docs.google.com/spreadsheets/d/${process.env.GOOGLE_SHEET_ID}/edit#gid=0">spreadsheet</a></h3>
         <form>
             <label for="words">Words</label>
             <input type="text" id="words" name="words" value="${parseInt(event.queryStringParameters && event.queryStringParameters.words) || 100}" />
