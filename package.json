@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "lodash": "^4.17.20",
+    "luxon": "^1.25.0",
     "node-sheets": "^1.2.0",
     "weighted": "^0.3.0"
   }

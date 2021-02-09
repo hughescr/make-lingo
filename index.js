@@ -3,6 +3,7 @@
 const _ = require('lodash');
 const { 'default': Sheets } = require('node-sheets');
 const weighted = require('weighted');
+const { DateTime } = require('luxon');
 
 const fs = require('fs');
 const promisify = require('util').promisify;
@@ -55,11 +56,26 @@ async function loadData() {
     });
 }
 
+async function lastUpdated() {
+    const sheet = new Sheets(process.env.GOOGLE_SHEET_ID);
+    return sheet.authorizeApiKey(process.env.GOOGLE_API_KEY)
+    .then(() => sheet.getLastUpdateDate())
+    .then(res => DateTime.fromISO(res));
+}
+
+let lastUpdatePromise = lastUpdated();
 let dataPromise = loadData();
 
+// eslint-disable-next-line complexity, sonarjs/cognitive-complexity -- complexity is stupid
 module.exports.makeLingo = async (event) => {
-    if(event.queryStringParameters && event.queryStringParameters.reload === 'true') {
+    const updated = lastUpdated();
+    if((await updated) > (await lastUpdatePromise)) {
+        console.log(JSON.stringify({ old: (await lastUpdatePromise), 'new': (await updated) }));
+        console.log('Refetching data from Google');
+        lastUpdatePromise = updated;
         dataPromise = loadData();
+    } else {
+        console.log(JSON.stringify({ old: (await lastUpdatePromise), 'new': (await updated) }));
     }
 
     const language = (event.queryStringParameters && event.queryStringParameters.language) ||
@@ -67,7 +83,7 @@ module.exports.makeLingo = async (event) => {
                        && _.find(event.cookies, cookie => cookie.match(/^language=(.+)$/)).match(/^language=(.+)$/)[1]) ||
                      _.keys(await dataPromise)[0];
 
-    console.log('Language:', language);
+    console.log(JSON.stringify({ language: language }));
 
     const { syllables, frequencies, syllableCounts, syllableCountFrequencies } = (await dataPromise)[language];
 
@@ -100,8 +116,6 @@ module.exports.makeLingo = async (event) => {
             <input type="text" id="words" name="words" value="${parseInt(event.queryStringParameters && event.queryStringParameters.words) || 100}" />
             <label for="syllables">Syllables (leave blank for weighted-random)</label>
             <input type="text" id="syllables" name="syllables" value="${parseInt(event.queryStringParameters && event.queryStringParameters.syllables) || ''}" />
-            <label for="reload">Reload from sheet</label>
-            <input type="checkbox" name="reload" id="reload" value="true" />
             <input type="submit" value="Make more"/>
         </form>
         <div class="words">
