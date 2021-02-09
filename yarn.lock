@@ -2348,7 +2348,7 @@ globals@^12.1.0:
   dependencies:
     type-fest "^0.8.1"
 
-globby@^11.0.1, globby@^11.0.2:
+globby@^11.0.2:
   version "11.0.2"
   resolved "https://registry.yarnpkg.com/globby/-/globby-11.0.2.tgz#1af538b766a3b540ebfb58a32b2e2d5897321d83"
   integrity sha512-2ZThXDvvV8fYFRVIxnrMQBipZQDr7MxKAmQK1vujaj9/7eF0efG7BPUKJ7jP7G5SLF37xKDXvO4S/KKLj/Z0og==
@@ -4133,13 +4133,6 @@ semver@^7.2.1, semver@^7.3.4:
   integrity sha512-tCfb2WLjqFAtXn4KEdxIhalnRtoKFN7nAwj0B3ZXCbQloV2tq5eDbcTmT68JJD3nRJq24/XgxtQKFIpQdtvmVw==
   dependencies:
     lru-cache "^6.0.0"
-
-serverless-plugin-zip-symlinks-compress-harder@^0.11.0:
-  version "0.11.0"
-  resolved "https://registry.yarnpkg.com/serverless-plugin-zip-symlinks-compress-harder/-/serverless-plugin-zip-symlinks-compress-harder-0.11.0.tgz#70085b56a0e0a7c9886e1e689e92671a8ce8d2d8"
-  integrity sha512-9SYXen0F3q3S2L7V2ZRQjib6O+3LhMvnnBVTv/2fm84A7W08UpUyzXQa4CLyNTMiLFG/D2Xka/OschVO/IOVlw==
-  dependencies:
-    globby "^11.0.1"
 
 serverless@^2.23.0:
   version "2.23.0"
