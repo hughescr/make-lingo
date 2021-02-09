@@ -23,9 +23,6 @@ provider:
     GOOGLE_SHEET_ID: ${param:GOOGLE_SHEET_ID}
     GOOGLE_API_KEY: ${param:GOOGLE_API_KEY}
 
-  apiGateway:
-    minimumCompressionSize: 1024
-
   lambdaHashingVersion: 20201221
 
 plugins:
