@@ -14,6 +14,7 @@ provider:
   memorySize: 256
   timeout: 10
   region: us-west-2
+  versionFunctions: false
 
   deploymentBucket:
     name: ${ssm:/serverless/deploymentbucket/prefix}-${self:provider.region}
