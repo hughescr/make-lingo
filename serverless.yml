@@ -28,10 +28,18 @@ provider:
 
 plugins:
   - "@hughescr/serverless-plugin-git-version-json"
+  - serverless-domain-manager
 
 custom:
   # Specify the path to where the git versioning plugin should write its output json file, relative to the root folder
   versionJSONFile: git_version.json
+
+  customDomain:
+    http:
+      domainName: makelingo.rungie.com
+      endpointType: regional
+      apiType: http
+      autoDomain: true
 
 functions:
 
