@@ -8,6 +8,7 @@ const { DateTime } = require('luxon');
 const fs = require('fs');
 const promisify = require('util').promisify;
 const stat = promisify(fs.stat);
+const zlib = require('zlib');
 
 /* istanbul ignore next */
 const git_version = stat('./git_version.json')
@@ -68,6 +69,8 @@ let dataPromise = loadData();
 
 // eslint-disable-next-line complexity, sonarjs/cognitive-complexity -- complexity is stupid
 module.exports.makeLingo = async (event) => {
+    // const acceptEncoding = event.headers['accept-encoding'];
+    console.log(event);
     const updated = lastUpdated();
     if((await updated) > (await lastUpdatePromise)) {
         console.log(JSON.stringify({ old: (await lastUpdatePromise), 'new': (await updated) }));
@@ -97,16 +100,9 @@ module.exports.makeLingo = async (event) => {
         words.push(word);
     }
 
-    return {
-        statusCode: 200,
-        cookies: [`language=${language}; Max-Age:${60 * 60 * 24 * 365}`],
-        headers: {
-            'X-Git-Version': JSON.stringify(await git_version),
-            'Content-Type': 'text/html',
-        },
-        body: `<html><head><title>Word generator</title></head>
+    let body = `<html><head><title>Word generator</title></head>
     <body>
-    	<h3>Edit <a href="https://docs.google.com/spreadsheets/d/${process.env.GOOGLE_SHEET_ID}/edit#gid=0">spreadsheet</a></h3>
+        <h3>Edit <a href="https://docs.google.com/spreadsheets/d/${process.env.GOOGLE_SHEET_ID}/edit#gid=0">spreadsheet</a></h3>
         <form>
             <label for="language">Language</label>
             <select name="language" id="language">
@@ -119,9 +115,19 @@ module.exports.makeLingo = async (event) => {
             <input type="submit" value="Make more"/>
         </form>
         <div class="words">
-	        <div class="word">${words.join('</div><div class="word">')}</div>
+            <div class="word">${words.join('</div><div class="word">')}</div>
         </div>
     </body>
-</html>`,
+</html>`;
+
+    return {
+        statusCode: 200,
+        cookies: [`language=${language}; Max-Age:${60 * 60 * 24 * 365}`],
+        headers: {
+            'X-Git-Version': JSON.stringify(await git_version),
+            'Content-Type': 'text/html',
+            Vary: 'Accept-Encoding',
+        },
+        body: body,
     };
 };
