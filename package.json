@@ -1,6 +1,6 @@
 {
   "name": "make-lingo",
-  "version": "2.1.3",
+  "version": "2.2.0",
   "engines": {
     "node": ">=10.x"
   },
