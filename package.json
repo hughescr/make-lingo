@@ -1,6 +1,6 @@
 {
   "name": "make-lingo",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "engines": {
     "node": ">=10.x"
   },
@@ -12,15 +12,15 @@
   "author": "Craig R. Hughes <craig.git@rungie.com>",
   "license": "BSD-3-Clause-Clear",
   "devDependencies": {
-    "@hughescr/eslint-config-default": "^2.8.6",
-    "@hughescr/serverless-plugin-git-version-json": "^1.0.2",
-    "eslint": "^7.25.0",
-    "serverless": "^2.38.0",
+    "@hughescr/eslint-config-default": "^2.8.7",
+    "@hughescr/serverless-plugin-git-version-json": "^1.0.3",
+    "eslint": "^7.27.0",
+    "serverless": "^2.43.1",
     "serverless-domain-manager": "^5.1.0"
   },
   "dependencies": {
     "lodash": "^4.17.21",
-    "luxon": "^1.26.0",
+    "luxon": "^1.27.0",
     "node-sheets": "^1.2.0",
     "weighted": "^0.3.0"
   }
