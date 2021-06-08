@@ -1,6 +1,6 @@
 {
   "name": "make-lingo",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "engines": {
     "node": ">=10.x"
   },
@@ -14,8 +14,8 @@
   "devDependencies": {
     "@hughescr/eslint-config-default": "^2.8.7",
     "@hughescr/serverless-plugin-git-version-json": "^1.0.3",
-    "eslint": "^7.27.0",
-    "serverless": "^2.43.1",
+    "eslint": "^7.28.0",
+    "serverless": "^2.45.1",
     "serverless-domain-manager": "^5.1.0"
   },
   "dependencies": {
