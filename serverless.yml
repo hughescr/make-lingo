@@ -10,6 +10,7 @@ service: make-lingo
 provider:
   name: aws
   # These values are defaults, and can be over-written in each function below
+#  architectures: ["arm64"]
   runtime: nodejs14.x
   memorySize: 256
   timeout: 10
@@ -47,3 +48,10 @@ functions:
     handler: index.makeLingo
     events:
       - httpApi: GET /
+
+resources:
+  extensions:
+    MakeLingoLambdaFunction:
+      Properties:
+        Architectures:
+          - arm64
