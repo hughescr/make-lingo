@@ -10,8 +10,8 @@ service: make-lingo
 provider:
   name: aws
   # These values are defaults, and can be over-written in each function below
-#  architectures: ["arm64"]
-  runtime: nodejs14.x
+  architecture: arm64
+  runtime: nodejs16.x
   memorySize: 256
   timeout: 10
   region: us-west-2
@@ -25,7 +25,33 @@ provider:
     GOOGLE_SHEET_ID: ${param:GOOGLE_SHEET_ID}
     GOOGLE_API_KEY: ${param:GOOGLE_API_KEY}
 
-  lambdaHashingVersion: 20201221
+  stackTags:
+    Organization: 'Hughes Family'
+    Project: 'Language Maker'
+
+  logs:
+    httpApi:
+      format: >-
+        {
+        "requestTime":"$context.requestTime",
+        "requestId":"$context.requestId",
+        "apiId":"$context.apiId",
+        "identity": {
+        "sourceIp":"$context.identity.sourceIp",
+        "userAgent":"$context.identity.userAgent"
+        },
+        "resourcePath":"$context.routeKey",
+        "path":"$context.path",
+        "httpMethod":"$context.httpMethod",
+        "stage":"$context.stage",
+        "status":"$context.status",
+        "integrationStatus":"$context.integrationStatus",
+        "integrationLatency":"$context.integrationLatency",
+        "responseLatency":"$context.responseLatency",
+        "responseLength":"$context.responseLength",
+        "errorMessage":"$context.error.message",
+        "format":"SLS_HTTP_API_LOG","version":"1.0.0"
+        }
 
 plugins:
   - "@hughescr/serverless-plugin-git-version-json"
@@ -35,12 +61,16 @@ custom:
   # Specify the path to where the git versioning plugin should write its output json file, relative to the root folder
   versionJSONFile: git_version.json
 
+  logRetentionInDays: 30
+
   customDomain:
     http:
       domainName: makelingo.rungie.com
       endpointType: regional
       apiType: http
       autoDomain: true
+      createRoute53Record: true
+      createRoute53IPv6Record: true
 
 functions:
 
@@ -48,10 +78,3 @@ functions:
     handler: index.makeLingo
     events:
       - httpApi: GET /
-
-resources:
-  extensions:
-    MakeLingoLambdaFunction:
-      Properties:
-        Architectures:
-          - arm64
