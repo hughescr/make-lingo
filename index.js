@@ -125,7 +125,14 @@ module.exports.makeLingo = async (event) => {
 </html>`;
 
     if(/\bbr\b/.test(acceptEncoding)) {
-        body = (await brotli(body)).toString('base64');
+        body = (await brotli(body, {
+            chunkSize: 1024 * 1024,
+            params: {
+                [zlib.constants.BROTLI_PARAM_MODE]: zlib.constants.BROTLI_MODE_TEXT,
+                [zlib.constants.BROTLI_PARAM_QUALITY]: 6,
+                [zlib.constants.BROTLI_PARAM_SIZE_HINT]: body.length,
+            },
+        })).toString('base64');
         maybeZipped = { 'Content-Encoding': 'br' };
         base64Encoded = true;
     } else if(/\bgzip\b/.test(acceptEncoding)) {
@@ -143,6 +150,12 @@ module.exports.makeLingo = async (event) => {
         cookies: [`language=${language}; Max-Age:${60 * 60 * 24 * 365}`],
         headers: {
             ...maybeZipped,
+            'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+            'Content-Security-Policy': "default-src 'self'",
+            'X-Frame-Options': 'SAMEORIGIN',
+            'X-Content-Type-Options': 'nosniff',
+            'Referrer-Policy': 'strict-origin',
+            'X-XSS-Protection': '1; mode=block',
             'X-Git-Version': JSON.stringify(await git_version),
             'Content-Type': 'text/html',
             Vary: 'Accept-Encoding',
